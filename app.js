@@ -4,7 +4,7 @@ const routes = require('./routes'); // 引入路由模块
 app.use(express.static('public'));
 
 const {MongoClient, ServerApiVersion} = require('mongodb');
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || "mongodb+srv://dbuser:jdj123456@list.wlxqf.mongodb.net/?retryWrites=true&w=majority&appName=list";
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1, strict: true, deprecationErrors: true,
