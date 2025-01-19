@@ -1,6 +1,12 @@
 const express = require('express');
 const app = express();
 const routes = require('./routes'); // 引入路由模块
+const cors = require('cors');
+
+// 添加中间件
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const {MongoClient, ServerApiVersion} = require('mongodb');
