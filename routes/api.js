@@ -2,8 +2,10 @@ const express = require('express');
 const {ObjectId} = require('mongodb');
 const unpkgUrl = "https://unpkg.com/picx-images/"
 
+
 module.exports = (client) => {
     let router = express.Router();
+
     router.get('/', async (req, res) => {
         try {
             if (!client) {
@@ -48,6 +50,10 @@ module.exports = (client) => {
             const type = req.params.type;
             const name = req.params.name;
             const imgUrl = unpkgUrl + req.params.type + "/" + req.params.name + ".webp";
+            let item = await collection.findOne({imgUrl: imgUrl});
+            if (item) {
+                res.send({success: false, msg: "已存在该图片URL"});
+            }
             console.log(type + name + imgUrl);
             const newItem = {
                 type: type, name: name, imgUrl: imgUrl
@@ -61,10 +67,11 @@ module.exports = (client) => {
                 res.status(500).send({success: false, msg: "Failed to add item"});
             }
         } catch (err) {
-            console.error(err); // 打印错误信息以便调试
+            console.error(err);
             res.status(500).send({success: false, msg: "Internal Server Error"});
         }
     });
+
 
     return router;
 };

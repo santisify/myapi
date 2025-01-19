@@ -1,11 +1,10 @@
 const express = require('express');
 const app = express();
 const routes = require('./routes'); // 引入路由模块
-
-app.use(express.json()); // 解析请求体中的 JSON 数据
+app.use(express.static('public'));
 
 const {MongoClient, ServerApiVersion} = require('mongodb');
-const uri = "mongodb+srv://dbuser:jdj123456@list.wlxqf.mongodb.net/?retryWrites=true&w=majority&appName=list";
+const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1, strict: true, deprecationErrors: true,
@@ -25,9 +24,9 @@ async function run() {
     }
 }
 
-run().catch(console.dir); // 启动 MongoDB 连接
-
-const port = 3000;
+run().catch(console.dir);
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`App listening on port ${port}`); // 启动 Express 服务器
 });
+module.exports = app;
