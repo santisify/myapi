@@ -101,7 +101,7 @@ module.exports = (client) => {
             const result = await collection.insertOne(newItem);
             if (result.acknowledged) {
                 return res.status(201).send({
-                    success: true, msg: "Item added successfully", data: newItem
+                    success: true, msg: "添加成功", data: newItem
                 });
             } else {
                 return res.status(500).send({success: false, msg: "添加失败"});
@@ -111,5 +111,15 @@ module.exports = (client) => {
             return res.status(500).send({success: false, msg: "啊噢，与服务器断开连接，请重试"});
         }
     });
+
+    // 添加错误处理中间件
+    router.use((err, req, res, next) => {
+        console.error(err.stack);
+        res.status(500).send({
+            success: false,
+            msg: "服务器内部错误"
+        });
+    });
+
     return router;
 };
