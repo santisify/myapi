@@ -19,17 +19,19 @@ module.exports = (client) => {
         }
     })
 
-    router.get('/:type/:name', async (req, res) => {
+    router.get('/:type', async (req, res) => {
         try {
             if (!client) {
                 return res.status(500).send({success: false, msg: "服务器与数据库断开连接"});
             }
-            let collection = client.db('lazyboy').collection('imgUrl');
-            const item = await collection.find({type: req.params.type, name: req.params.name}).toArray();
-            if (item.length > 0) {
+            const collection = client.db('lazyboy').collection('imgUrl');
+            const items = await collection.find({type: req.params.type}).toArray();
+            if (items.length > 0) {
+                const index = Math.floor(Math.random() * items.length);
+                const item = items[index];
                 return res.send({success: true, data: item});
             } else {
-                return res.status(404).send({success: false, msg: "无该图片"});
+                return res.status(404).send({success: false, msg: "该分类无图片"})
             }
         } catch (err) {
             return res.status(404).send({success: false, msg: "啊噢，与服务器断开连接，请重试"});
@@ -59,27 +61,24 @@ module.exports = (client) => {
             console.error(err); // 打印错误信息
             res.status(500).send({success: false, msg: "啊噢，与服务器断开连接，请重试"});
         }
-    });
+    })
 
-    router.get('/:type', async (req, res) => {
+    router.get('/:type/:name', async (req, res) => {
         try {
             if (!client) {
                 return res.status(500).send({success: false, msg: "服务器与数据库断开连接"});
             }
-            const collection = client.db('lazyboy').collection('imgUrl');
-            const items = await collection.find({type: req.params.type}).toArray();
-            if (items.length > 0) {
-                const index = Math.floor(Math.random() * items.length);
-                const item = items[index];
+            let collection = client.db('lazyboy').collection('imgUrl');
+            const item = await collection.find({type: req.params.type, name: req.params.name}).toArray();
+            if (item.length > 0) {
                 return res.send({success: true, data: item});
             } else {
-                return res.status(404).send({success: false, msg: "该分类无图片"})
+                return res.status(404).send({success: false, msg: "无该图片"});
             }
         } catch (err) {
             return res.status(404).send({success: false, msg: "啊噢，与服务器断开连接，请重试"});
         }
     })
-
 
     router.post('/add/:type/:name', async (req, res) => {
         try {
@@ -116,8 +115,7 @@ module.exports = (client) => {
     router.use((err, req, res, next) => {
         console.error(err.stack);
         res.status(500).send({
-            success: false,
-            msg: "服务器内部错误"
+            success: false, msg: "服务器内部错误"
         });
     });
 
