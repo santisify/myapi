@@ -6,15 +6,17 @@ const cors = require('cors');
 // 添加中间件
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(express.static('public'));
 
 const {MongoClient, ServerApiVersion} = require('mongodb');
-const uri ="mongodb+srv://dbuser:jdj123456@list.wlxqf.mongodb.net/?retryWrites=true&w=majority&appName=list";
+const uri = "mongodb+srv://dbuser:jdj123456@list.wlxqf.mongodb.net/?retryWrites=true&w=majority&appName=list";
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1, strict: true, deprecationErrors: true,
-    }
+    },
+    tls: true, // 启用 TLS
+    tlsAllowInvalidCertificates: false, // 不允许无效证书
 });
 
 async function run() {
