@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const {MongoClient, ServerApiVersion} = require('mongodb');
-const uri = process.env.MONGODB_URI || "mongodb+srv://dbuser:jdj123456@list.wlxqf.mongodb.net/?retryWrites=true&w=majority&appName=list";
+const uri ="mongodb+srv://dbuser:jdj123456@list.wlxqf.mongodb.net/?retryWrites=true&w=majority&appName=list";
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1, strict: true, deprecationErrors: true,
@@ -31,7 +31,7 @@ async function run() {
 }
 
 run().catch(console.dir);
-const port = process.env.PORT || 3000;
+const port = 3000;
 app.listen(port, () => {
     console.log(`App listening on port ${port}`); // 启动 Express 服务器
 });
