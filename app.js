@@ -31,7 +31,7 @@ async function connectDB() {
 }
 
 // 健康检查路由
-app.get('/health', (req, res) => {
+app.get('/', (req, res) => {
     res.json({
         status: 'ok',
         time: new Date().toISOString(),
