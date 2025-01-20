@@ -13,7 +13,7 @@ async function connectDB() {
         return client;
     }
 
-    const uri = "mongodb+srv://dbuser:jdj123456@list.wlxqf.mongodb.net/?retryWrites=true&w=majority&appName=list";
+    const uri = process.env.MONGODB_URI; //在根目录下的.env文件中配置MONGO数据库的URI
     client = new MongoClient(uri, {
         serverApi: {
             version: ServerApiVersion.v1, strict: true, deprecationErrors: true,
@@ -35,12 +35,13 @@ app.get('/', (req, res) => {
     res.json({
         status: 'ok',
         time: new Date().toISOString(),
-        dbStatus: client && client.topology && client.topology.isConnected() ? 'connected' : 'disconnected'
+        dbStatus: client && client.topology && client.topology.isConnected() ? 'connected' : 'disconnected',
+        notice: "只支持访问后缀为.webp的图片，未来也不会添加其他后缀访问的图片"
     });
 });
 
-// API 路由
-app.get('/api', async (req, res) => {
+// img API路由
+app.get('/img', async (req, res) => {
     try {
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('imgUrl');
@@ -49,14 +50,15 @@ app.get('/api', async (req, res) => {
             success: true, count: items.length, data: items
         });
     } catch (err) {
-        console.error("Error in /api route:", err);
+        console.error("Error in /img route:", err);
         res.status(500).json({
             success: false, message: 'Database error', error: err.message
         });
     }
 });
 
-app.get('/api/:type', async (req, res) => {
+//一个分类的随机图片
+app.get('/img/:type', async (req, res) => {
     try {
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('imgUrl');
@@ -73,14 +75,15 @@ app.get('/api/:type', async (req, res) => {
             });
         }
     } catch (err) {
-        console.error("Error in /api/:type route:", err);
+        console.error("Error in /img/:type route:", err);
         res.status(500).json({
             success: false, message: 'Database error', error: err.message
         });
     }
 });
 
-app.get('/api/:type/all', async (req, res) => {
+//所有同一分类的图片
+app.get('/img/:type/all', async (req, res) => {
     try {
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('imgUrl');
@@ -95,14 +98,15 @@ app.get('/api/:type/all', async (req, res) => {
             });
         }
     } catch (err) {
-        console.error("Error in /api/:type route:", err);
+        console.error("Error in /img/:type route:", err);
         res.status(500).json({
             success: false, message: 'Database error', error: err.message
         });
     }
 });
 
-app.get('/api/:type/:name', async (req, res) => {
+// 指定图片
+app.get('/img/:type/:name', async (req, res) => {
     try {
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('imgUrl');
@@ -117,12 +121,13 @@ app.get('/api/:type/:name', async (req, res) => {
             });
         }
     } catch (err) {
-        console.error("Error in /api/:type/:name route:", err);
+        console.error("Error in /img/:type/:name route:", err);
         res.status(500).json({
             success: false, message: 'Database error', error: err.message
         });
     }
 });
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
