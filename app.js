@@ -128,6 +128,42 @@ app.get('/img/:type/:name', async (req, res) => {
     }
 });
 
+//添加图片
+app.post('/add/:type/:name', async (req, res) => {
+    try {
+        const {type, name} = req.params;
+        if (typeof type !== 'string') {
+            res.status(400).json({
+                success: false, message: "Invalid format of type string"
+            })
+        }
+
+        if (typeof name !== 'string') {
+            res.status(400).json({
+                success: false, message: "Invalid format of name string"
+            })
+        }
+        const dbClient = await connectDB();
+        const collection = dbClient.db('lazyboy').collection('imgUrl');
+        const imgUrl = "https://unpkg.com/picx-images/" + type + "/" + name + ".webp";
+        const re = await collection.insertOne({name: name, imgUrl: imgUrl, type: type});
+        if (re) {
+            res.status(201).json({
+                success: true, data: res
+            })
+        } else {
+            res.status(404).json({
+                success: false, message: "添加失败"
+            })
+        }
+    } catch (err) {
+        console.error("Error in /add/:type/:name route:", err);
+        res.status(500).json({
+            success: false, message: 'Database error', error: err.message
+        })
+    }
+});
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
