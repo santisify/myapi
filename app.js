@@ -40,6 +40,7 @@ app.get('/', (req, res) => {
     });
 });
 
+
 // img API路由
 app.get('/img', async (req, res) => {
     try {
@@ -68,6 +69,29 @@ app.get('/img/:type', async (req, res) => {
             const index = Math.floor(Math.random() * items.length);
             res.json({
                 success: true, data: items[index]
+            });
+        } else {
+            res.status(404).json({
+                success: false, message: '该分类无图片'
+            });
+        }
+    } catch (err) {
+        console.error("Error in /img/:type route:", err);
+        res.status(500).json({
+            success: false, message: 'Database error', error: err.message
+        });
+    }
+});
+
+//获取用户
+app.get('/user/:username', async (req, res) => {
+    try {
+        const dbClient = await connectDB();
+        const collection = dbClient.db('lazyboy').collection('user');
+        const item = await collection.find({username: req.params.username}).toArray();
+        if (item.length > 0) {
+            res.json({
+                success: true, data: item
             });
         } else {
             res.status(404).json({
