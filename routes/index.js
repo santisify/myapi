@@ -1,6 +1,7 @@
 const express = require('express');
-const imgRoutes = require('./imgRoutes');
-const userRoutes = require('./userRoutes');
+const imgRoutes = require('./imgRouter');
+const userRoutes = require('./userRouter');
+const siteRoutes = require('./siteRouter');
 
 const router = express.Router();
 
@@ -15,5 +16,5 @@ router.get('/', (req, res) => {
 router.use('/img', imgRoutes);
 // 用户相关路由
 router.use('/user', userRoutes);
-
+router.use('/site', siteRoutes);
 module.exports = router;
