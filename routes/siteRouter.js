@@ -18,14 +18,19 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.put('/put', async (req, res, param) => {
+router.put('/put', async (req, res, params) => {
     try {
         const dbClient = await connectDB();
-        console.log(param);
+        console.log(params);
         // const collection = dbClient.db('lazyboy').collection('siteInfo').insertOne(param);
+        res.status(200).json({
+            success: true,
+            data: params
+        })
     } catch (err) {
         res.status(404).json({
-            success: false, message: err.message
+            success: false,
+            message: err.message
         })
     }
 })
