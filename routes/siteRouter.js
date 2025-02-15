@@ -18,19 +18,21 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.post('/add', async (req, res, params) => {
+router.post('/add', async (req, res) => {
     try {
+        const params = req.body;
         const dbClient = await connectDB();
-        console.log(params);
-        // const collection = dbClient.db('lazyboy').collection('siteInfo').insertOne(param);
+        const collection = dbClient.db('lazyboy').collection('siteInfo');
+        // const result = await collection.insertOne(params);
+
         res.status(200).json({
-            success: true, data: params
-        })
+            success: true, data: params // 返回插入的数据
+        });
     } catch (err) {
-        res.status(404).json({
+        res.status(500).json({
             success: false, message: err.message
-        })
+        });
     }
-})
+});
 
 module.exports = router;
