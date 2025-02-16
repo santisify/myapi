@@ -26,7 +26,7 @@ router.post('/add', async (req, res) => {
         const result = await collection.insertOne(params);
 
         res.status(200).json({
-            success: true, data: params // 返回插入的数据
+            success: true, data: result // 返回插入的数据
         });
     } catch (err) {
         res.status(500).json({
