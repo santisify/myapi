@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('siteInfo');
         const items = await collection.find({}).toArray();
-        res.json({
+        res.status(200).json({
             success: true, count: items.length, data: items
         })
     } catch (err) {
@@ -26,7 +26,7 @@ router.post('/add', async (req, res) => {
         const collection = dbClient.db('lazyboy').collection('siteInfo');
         const result = await collection.insertOne(params);
 
-        res.status(200).json({
+        res.status(201).json({
             success: true, data: result // 返回插入的数据
         });
     } catch (err) {
@@ -49,22 +49,18 @@ router.delete('/delete/:siteId', async (req, res) => {
         const result = await collection.deleteOne({_id: new ObjectId(siteId)});
 
         if (result.deletedCount === 1) {
-            res.status(200).json({
-                success: true,
-                message: '删除成功',
-                data: result,
+            res.status(204).json({
+                success: true, message: '删除成功', data: result,
             });
         } else {
             res.status(404).json({
-                success: false,
-                message: '未找到对应的文档',
+                success: false, message: '未找到对应的文档',
             });
         }
     } catch (err) {
         console.error('删除失败:', err);
         res.status(500).json({
-            success: false,
-            message: err.message,
+            success: false, message: err.message,
         });
     }
 });

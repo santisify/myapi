@@ -9,7 +9,7 @@ router.get('/:username', async (req, res) => {
         const collection = dbClient.db('lazyboy').collection('user');
         const item = await collection.find({ username: req.params.username }).toArray();
         if (item.length > 0) {
-            res.json({
+            res.status(200).json({
                 success: true, data: item
             });
         } else {
