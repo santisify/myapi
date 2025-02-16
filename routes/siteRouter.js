@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const connectDB = require('../db/db');
+const {ObjectId} = require("mongodb");
 
 //获取个人网站信息
 router.get('/', async (req, res) => {
@@ -40,7 +41,7 @@ router.delete('/delete', async (req, res) => {
         const params = req.body;
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('siteInfo');
-        const result = await collection.deleteOne({_id: params._id});
+        const result = await collection.deleteOne({_id: ObjectId(params.siteId)});
         res.status(200).json({
             success: true, data: result
         })
