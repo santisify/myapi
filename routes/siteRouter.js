@@ -47,7 +47,7 @@ router.delete('/delete', async (req, res) => {
         console.log(siteId);
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('siteInfo');
-        const result = await collection.deleteOne({_id: ObjectId(siteId)});
+        const result = await collection.deleteOne({_id: siteId});
         res.status(200).json({
             success: true, data: result
         })
