@@ -46,7 +46,7 @@ router.delete('/delete/:siteId', async (req, res) => {
         const collection = dbClient.db('lazyboy').collection('siteInfo');
 
         // 将 siteId 转换为 ObjectId
-        const result = await collection.deleteOne({_id: ObjectId(siteId)});
+        const result = await collection.deleteOne({_id: new ObjectId(siteId)});
 
         if (result.deletedCount === 1) {
             res.status(200).json({
