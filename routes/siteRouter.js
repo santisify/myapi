@@ -35,4 +35,20 @@ router.post('/add', async (req, res) => {
     }
 });
 
+router.delete('/delete', async (req, res) => {
+    try {
+        const params = req.body;
+        const dbClient = await connectDB();
+        const collection = dbClient.db('lazyboy').collection('siteInfo');
+        // const result = await collection.deleteOne(params);
+        res.status(200).json({
+            success: true, data: params
+        })
+    } catch (err) {
+        res.status(500).json({
+            success: false, message: err.message
+        })
+    }
+})
+
 module.exports = router;
