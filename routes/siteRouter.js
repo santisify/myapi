@@ -38,12 +38,16 @@ router.post('/add', async (req, res) => {
 
 router.delete('/delete', async (req, res) => {
     try {
-        const params = req.body;
-        console.log(params);
+        const {siteId} = req.body; // 从请求体中解构出 siteId
+        if (!siteId) {
+            return res.status(400).json({
+                success: false, message: 'siteId is required'
+            });
+        }
+        console.log(siteId);
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('siteInfo');
-
-        const result = await collection.deleteOne({_id: ObjectId(params)});
+        const result = await collection.deleteOne({_id: ObjectId(siteId)});
         res.status(200).json({
             success: true, data: result
         })
