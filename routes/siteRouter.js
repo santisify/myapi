@@ -36,26 +36,32 @@ router.post('/add', async (req, res) => {
     }
 });
 
-router.delete('/delete', async (req, res) => {
+router.delete('/delete/:siteId', async (req, res) => {
     try {
-        const {siteId} = req.body; // 从请求体中解构出 siteId
-        if (!siteId) {
-            return res.status(400).json({
-                success: false, message: 'siteId is required'
-            });
-        }
-        console.log(siteId);
+        const siteId = req.params.siteId; // 从 URL 参数中获取 siteId
+        console.log('要删除的 siteId:', siteId);
+
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('siteInfo');
-        const result = await collection.deleteOne({_id: siteId});
-        res.status(200).json({
-            success: true, data: result
-        })
+
+        // 将 siteId 转换为 ObjectId
+        const result = await collection.deleteOne({_id: ObjectId(siteId)});
+
+        if (result.deletedCount === 1) {
+            res.status(200).json({
+                success: true, message: '删除成功', data: result,
+            });
+        } else {
+            res.status(404).json({
+                success: false, message: '未找到对应的文档',
+            });
+        }
     } catch (err) {
+        console.error('删除失败:', err);
         res.status(500).json({
-            success: false, message: err.message
-        })
+            success: false, message: err.message,
+        });
     }
-})
+});
 
 module.exports = router;
