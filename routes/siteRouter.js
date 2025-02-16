@@ -23,7 +23,7 @@ router.post('/add', async (req, res) => {
         const params = req.body;
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('siteInfo');
-        // const result = await collection.insertOne(params);
+        const result = await collection.insertOne(params);
 
         res.status(200).json({
             success: true, data: params // 返回插入的数据
