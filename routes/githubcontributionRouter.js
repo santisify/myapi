@@ -1,15 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-require('dotenv').config(); // 加载环境变量
+require('dotenv').config({path: '../.env'}); // 加载环境变量
 
 // 检查 GitHub Token 是否存在
 const token = process.env.GITHUB_TOKEN;
-if (!token) {
-    console.error('GitHub Token is missing in environment variables.');
-    process.exit(1); // 如果缺少 Token，终止程序
-}
-
 /**
  * 获取 GitHub 用户贡献数据
  * @param {string} userName - GitHub 用户名
