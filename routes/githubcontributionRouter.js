@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-const token = process.env.GITHUB_TOKEN;
+
 
 
 router.get('/contributions/:username', async (req, res) => {
     const username = req.params.username;
 
     try {
+        const token = process.env.GITHUB_TOKEN;
         const contributions = await getGithubUserContribution(username, token);
         res.status(200).json(contributions);
     } catch (error) {
@@ -61,7 +62,7 @@ const getGithubUserContribution = async (userName, githubToken) => {
         );
 
         if (res.data.errors) {
-            throw new Error(res.data.errors[0].message);
+            new Error(res.data.errors[0].message);
         }
 
         const {data} = res.data;
