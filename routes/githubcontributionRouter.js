@@ -4,28 +4,27 @@ const axios = require('axios');
 
 const token = process.env.GITHUB_TOKEN;
 
-router.get('/contributions/:username', (req, res) => {
-    const username = req.params.username;
-    const GithubUserContribution = getGithubUserContribution(username, token);
 
+router.get('/contributions/:username', async (req, res) => {
+    const username = req.params.username;
+
+    try {
+        const contributions = await getGithubUserContribution(username, token);
+        res.status(200).json(contributions);
+    } catch (error) {
+        res.status(500).json({error: error.message});
+    }
 });
 
 /**
- * 获取 GitHub 用户的贡献网格数据
- *
- * 使用 options.from=YYYY-MM-DD 和 options.to=YYYY-MM-DD 来获取特定时间范围的贡献网格数据，
- * 或者使用 year=2019 作为 from=2019-01-01 和 to=2019-12-31 的别名。
- *
- * 如果未指定时间范围，则返回从今天往前一年的数据（类似于 GitHub 个人主页上的显示）。
+ * 获取 GitHub 用户的贡献日历数据
  *
  * @param {string} userName - GitHub 用户名
- * @param token - GitHub 个人访问令牌
- *
- * @example
- *  getGithubUserContribution("platane", { from: "2019-01-01", to: "2019-12-31" });
- *  getGithubUserContribution("platane", { year: 2019 });
+ * @param {string} githubToken - GitHub Token
+ * @returns {Promise<Array>} - 贡献日历数据
  */
-const getGithubUserContribution = async (userName, token) => {
+const getGithubUserContribution = async (userName, githubToken) => {
+    // GraphQL 查询
     const query = `
     query ($login: String!) {
       user(login: $login) {
@@ -44,26 +43,49 @@ const getGithubUserContribution = async (userName, token) => {
       }
     }
   `;
-    const variables = {login: userName};
 
-    const res = await fetch("https://api.github.com/graphql", {
-        headers: {
-            Authorization: `bearer ${token}`, "Content-Type": "application/json",
-        }, method: "POST", body: JSON.stringify({variables, query}),
-    });
+    const variables = {
+        login: userName,
+    };
 
-    if (!res.ok) throw new Error(res.statusText);
+    try {
+        const res = await axios.post(
+            'https://api.github.com/graphql',
+            {query, variables},
+            {
+                headers: {
+                    Authorization: `bearer ${githubToken}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
 
-    const {data, errors} = await res.json();
-    if (errors?.[0]) throw new Error(errors[0].message);
-    console.log(data.user);
-    return data.user.contributionsCollection.contributionCalendar.weeks.flatMap(({contributionDays}, x) => contributionDays.map((d) => ({
-        x,
-        y: d.weekday,
-        date: d.date,
-        count: d.contributionCount,
-        level: (d.contributionLevel === "FOURTH_QUARTILE" && 4) || (d.contributionLevel === "THIRD_QUARTILE" && 3) || (d.contributionLevel === "SECOND_QUARTILE" && 2) || (d.contributionLevel === "FIRST_QUARTILE" && 1) || 0,
-    })),);
+        if (res.data.errors) {
+            throw new Error(res.data.errors[0].message);
+        }
+
+        const {data} = res.data;
+
+        // 格式化数据
+        return data.user.contributionsCollection.contributionCalendar.weeks.flatMap(
+            ({contributionDays}, x) =>
+                contributionDays.map((d) => ({
+                    x,
+                    y: d.weekday,
+                    date: d.date,
+                    count: d.contributionCount,
+                    level:
+                        (d.contributionLevel === 'FOURTH_QUARTILE' && 4) ||
+                        (d.contributionLevel === 'THIRD_QUARTILE' && 3) ||
+                        (d.contributionLevel === 'SECOND_QUARTILE' && 2) ||
+                        (d.contributionLevel === 'FIRST_QUARTILE' && 1) ||
+                        0,
+                }))
+        );
+    } catch (error) {
+        console.error('Error details:', error.message || error.response?.data);
+        throw new Error('Failed to fetch contributions');
+    }
 };
 
 module.exports = router;
