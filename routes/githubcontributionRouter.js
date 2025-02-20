@@ -2,62 +2,68 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 const token = process.env.GITHUB_TOKEN;
 
-// GraphQL 查询
-const GET_CONTRIBUTIONS_QUERY = `
-  query ($username: String!) {
-    user(login: $username) {
-      contributionsCollection {
-        contributionCalendar {
-          weeks {
-            contributionDays {
-              contributionCount
-              date
-              weekday
-              contributionLevel
+router.get('/contributions/:username', (req, res) => {
+    const username = req.params.username;
+    const GithubUserContribution = getGithubUserContribution(username, token);
+
+});
+
+/**
+ * 获取 GitHub 用户的贡献网格数据
+ *
+ * 使用 options.from=YYYY-MM-DD 和 options.to=YYYY-MM-DD 来获取特定时间范围的贡献网格数据，
+ * 或者使用 year=2019 作为 from=2019-01-01 和 to=2019-12-31 的别名。
+ *
+ * 如果未指定时间范围，则返回从今天往前一年的数据（类似于 GitHub 个人主页上的显示）。
+ *
+ * @param {string} userName - GitHub 用户名
+ * @param token - GitHub 个人访问令牌
+ *
+ * @example
+ *  getGithubUserContribution("platane", { from: "2019-01-01", to: "2019-12-31" });
+ *  getGithubUserContribution("platane", { year: 2019 });
+ */
+const getGithubUserContribution = async (userName, token) => {
+    const query = `
+    query ($login: String!) {
+      user(login: $login) {
+        contributionsCollection {
+          contributionCalendar {
+            weeks {
+              contributionDays {
+                contributionCount
+                contributionLevel
+                weekday
+                date
+              }
             }
           }
         }
       }
     }
-  }
-`;
+  `;
+    const variables = {login: userName};
 
-router.get('/contributions/:username', async (req, res) => {
-    const {username} = req.params;
+    const res = await fetch("https://api.github.com/graphql", {
+        headers: {
+            Authorization: `bearer ${token}`, "Content-Type": "application/json",
+        }, method: "POST", body: JSON.stringify({variables, query}),
+    });
 
-    try {
-        // 发送 GraphQL 请求
-        const response = await axios.post(GITHUB_GRAPHQL_URL, {
-            query: GET_CONTRIBUTIONS_QUERY, variables: {username},
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`, 'Content-Type': 'application/json',
-            },
-        });
-        // 检查 GraphQL 错误
-        if (response.data.errors) {
-            throw new Error(response.data.errors[0].message);
-        }
-        // 提取贡献日历数据
-        const weeks = response.data.data.user.contributionsCollection.contributionCalendar.weeks;
-        // 格式化数据
-        const formattedData = weeks.flatMap(({contributionDays}, x) => contributionDays.map((d) => ({
-            x,
-            y: d.weekday,
-            date: d.date,
-            count: d.contributionCount,
-            level: (d.contributionLevel === 'FOURTH_QUARTILE' && 4) || (d.contributionLevel === 'THIRD_QUARTILE' && 3) || (d.contributionLevel === 'SECOND_QUARTILE' && 2) || (d.contributionLevel === 'FIRST_QUARTILE' && 1) || 0,
-        })));
+    if (!res.ok) throw new Error(res.statusText);
 
-        // 返回结果
-        res.status(200).json(formattedData);
-    } catch (error) {
-        console.error('Error details:', error.message || error.response?.data);
-        res.status(500).json({error: 'Failed to fetch contributions'});
-    }
-});
+    const {data, errors} = await res.json();
+    if (errors?.[0]) throw new Error(errors[0].message);
+    console.log(data.user);
+    return data.user.contributionsCollection.contributionCalendar.weeks.flatMap(({contributionDays}, x) => contributionDays.map((d) => ({
+        x,
+        y: d.weekday,
+        date: d.date,
+        count: d.contributionCount,
+        level: (d.contributionLevel === "FOURTH_QUARTILE" && 4) || (d.contributionLevel === "THIRD_QUARTILE" && 3) || (d.contributionLevel === "SECOND_QUARTILE" && 2) || (d.contributionLevel === "FIRST_QUARTILE" && 1) || 0,
+    })),);
+};
 
 module.exports = router;
