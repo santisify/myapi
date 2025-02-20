@@ -28,32 +28,9 @@ router.get('/contributions/:username', async (req, res) => {
             totalCommits += commitsResponse.data.length;
         }
 
-        // 获取用户的问题和拉取请求
-        const issuesAndPRsResponse = await axios.get(`https://api.github.com/search/issues`, {
-            headers: {
-                Authorization: `token ${token}`,
-            }, params: {
-                q: `author:${username}`,
-            },
-        });
-        const issuesAndPRs = issuesAndPRsResponse.data.items;
-
-        // 获取用户的代码审查
-        const reviewsResponse = await axios.get(`https://api.github.com/search/issues`, {
-            headers: {
-                Authorization: `token ${token}`,
-            }, params: {
-                q: `commenter:${username}`,
-            },
-        });
-        const reviews = reviewsResponse.data.items;
-
         // 汇总贡献数据
         const contributions = {
             commits: totalCommits,
-            issues: issuesAndPRs.filter(item => !item.pull_request).length,
-            pullRequests: issuesAndPRs.filter(item => item.pull_request).length,
-            reviews: reviews.length,
         };
 
         res.status(200).json(contributions);
