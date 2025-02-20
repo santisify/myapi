@@ -1,65 +1,61 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+require('dotenv').config(); // 确保已安装 dotenv
 
-// 调试：打印所有环境变量
-console.log('Loaded environment variables:', process.env);
+const token = process.env.GITHUB_TOKEN;
 
-// 检查 GitHub Token 是否存在
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-if (!GITHUB_TOKEN) {
-    console.error('GitHub Token is missing in environment variables.');
-    process.exit(1); // 如果缺少 Token，终止程序
-}
-
-/**
- * 获取 GitHub 用户贡献数据
- */
 const getGithubUserContribution = async (userName, githubToken) => {
     const query = `
-        query ($login: String!) {
-            user(login: $login) {
-                contributionsCollection {
-                    contributionCalendar {
-                        weeks {
-                            contributionDays {
-                                date
-                                contributionCount
-                            }
-                        }
-                    }
-                }
+    query ($login: String!) {
+      user(login: $login) {
+        contributionsCollection {
+          contributionCalendar {
+            weeks {
+              contributionDays {
+                contributionCount
+                contributionLevel
+                weekday
+                date
+              }
             }
+          }
         }
-    `;
+      }
+    }
+  `;
+
     const variables = { login: userName };
 
     try {
-        const response = await axios.post(
+        const res = await axios.post(
             'https://api.github.com/graphql',
             { query, variables },
             {
                 headers: {
-                    Authorization: `bearer ${githubToken}`, // 确保格式正确
-                    'Content-Type': 'application/json',     // 确保 Content-Type 正确
+                    Authorization: `bearer ${githubToken}`,
+                    'Content-Type': 'application/json',
                 },
             }
         );
 
-        if (response.data.errors) {
-            console.error('GitHub API Error:', response.data.errors);
-            throw new Error(response.data.errors[0].message || 'Unknown GraphQL error');
+        if (res.data.errors) {
+            console.error('GitHub API Error:', res.data.errors);
+            throw new Error(res.data.errors[0].message);
         }
 
-        const { data } = response.data;
+        const { data } = res.data;
         return data.user.contributionsCollection.contributionCalendar.weeks.flatMap(
-            ({ contributionDays }, weekIndex) =>
-                contributionDays.map((day) => ({
-                    x: weekIndex,
-                    y: new Date(day.date).getDay(), // 星期几 (0-6)
-                    date: day.date,
-                    count: day.contributionCount,
-                }))
+            ({ contributionDays }, x) => contributionDays.map((d) => ({
+                x,
+                y: d.weekday,
+                date: d.date,
+                count: d.contributionCount,
+                level: (d.contributionLevel === 'FOURTH_QUARTILE' ? 4 :
+                    d.contributionLevel === 'THIRD_QUARTILE' ? 3 :
+                        d.contributionLevel === 'SECOND_QUARTILE' ? 2 :
+                            d.contributionLevel === 'FIRST_QUARTILE' ? 1 : 0),
+            }))
         );
     } catch (error) {
         console.error('Request Failed:', error.message);
@@ -72,9 +68,8 @@ const getGithubUserContribution = async (userName, githubToken) => {
 
 router.get('/contributions/:username', async (req, res) => {
     const username = req.params.username;
-
     try {
-        const contributions = await getGithubUserContribution(username, GITHUB_TOKEN);
+        const contributions = await getGithubUserContribution(username, token);
         res.status(200).json(contributions);
     } catch (error) {
         res.status(500).json({ error: error.message });
