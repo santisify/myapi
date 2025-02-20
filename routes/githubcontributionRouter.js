@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+require('dotenv').config();
 
 router.get('/contributions/:username', async (req, res) => {
     const {username} = req.params;
@@ -58,7 +59,7 @@ router.get('/contributions/:username', async (req, res) => {
 
         res.status(200).json(contributions);
     } catch (error) {
-        console.error(error);
+        console.error('Error details:', error.response?.data || error.message);
         res.status(500).json({error: 'Failed to fetch contributions'});
     }
 });
