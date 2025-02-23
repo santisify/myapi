@@ -177,9 +177,10 @@ router.post('/add/:type/:name', async (req, res) => {
 
         // 下载图片并获取其信息
         let imageInfo;
+        let buffer;
         try {
             const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-            const buffer = Buffer.from(response.data, 'binary');
+            buffer = Buffer.from(response.data, 'binary');
             imageInfo = sizeOf(buffer); // 获取图片尺寸和格式
         } catch (err) {
             console.error("Error fetching image:", err);
@@ -214,7 +215,7 @@ router.post('/add/:type/:name', async (req, res) => {
             description,
             filename: `${name}.${imageFormat.toLowerCase()}`,
             url,
-            size: Buffer.byteLength(imageInfo), // 图片大小
+            size: buffer.length, // 使用 buffer.length 获取图片大小
             width,
             height,
             format: imageFormat,
