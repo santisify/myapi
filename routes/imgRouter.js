@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const connectDB = require('../db/db');
-
+const axios = require('axios');
+const sizeOf = require('image-size'); // 用于获取图片尺寸和格式
+const { URL } = require('url'); // 用于解析 URL
 /**
  * @GET https://api.lazy-boy-acmer.cn/img/
  * 获取所有图片信息
@@ -151,34 +153,61 @@ router.get('/:type/:name', async (req, res) => {
  */
 router.post('/add/:type/:name', async (req, res) => {
     try {
-        const {type, name} = req.params;
-        const {title, description, size, width, height, format, uploadedBy, tags, metadata} = req.body;
+        const { type, name } = req.params;
+        const { title, description, uploadedBy, tags, metadata, imageUrl } = req.body;
 
         // 验证必填字段
-        if (!title || !description || !size || !width || !height || !format || !uploadedBy) {
+        if (!title || !description || !uploadedBy || !imageUrl) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required fields."
+                message: "Missing required fields: title, description, uploadedBy, imageUrl."
             });
         }
 
+        // 验证 imageUrl 是否合法
+        try {
+            new URL(imageUrl); // 如果 URL 不合法会抛出错误
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid image URL."
+            });
+        }
+
+        // 下载图片并获取其信息
+        let imageInfo;
+        try {
+            const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+            const buffer = Buffer.from(response.data, 'binary');
+            imageInfo = sizeOf(buffer); // 获取图片尺寸和格式
+        } catch (err) {
+            console.error("Error fetching image:", err);
+            return res.status(400).json({
+                success: false,
+                message: "Failed to fetch image from URL."
+            });
+        }
+
+        const { width, height, type: imageFormat } = imageInfo;
+
+        // 连接数据库
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('img');
 
         // 构造图片 URL
-        const url = `https://unpkg.com/picx-images/${type}/${name}.${format.toLowerCase()}`;
+        const url = `https://unpkg.com/picx-images/${type}/${name}.${imageFormat.toLowerCase()}`;
 
         // 插入新图片
         const result = await collection.insertOne({
             title,
             type,
             description,
-            filename: `${name}.${format.toLowerCase()}`,
+            filename: `${name}.${imageFormat.toLowerCase()}`,
             url,
-            size,
+            size: Buffer.byteLength(imageInfo), // 图片大小
             width,
             height,
-            format,
+            format: imageFormat,
             uploadedBy,
             uploadedAt: new Date(),
             tags: tags || [],
