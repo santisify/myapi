@@ -4,6 +4,7 @@ const connectDB = require('../db/db');
 const axios = require('axios');
 const sizeOf = require('image-size'); // 用于获取图片尺寸和格式
 const { URL } = require('url'); // 用于解析 URL
+const { generateImageDescription } = require('../utils/imageDescription'); // 假设有一个工具函数用于生成图片描述
 /**
  * @GET https://api.lazy-boy-acmer.cn/img/
  * 获取所有图片信息
@@ -154,13 +155,13 @@ router.get('/:type/:name', async (req, res) => {
 router.post('/add/:type/:name', async (req, res) => {
     try {
         const { type, name } = req.params;
-        const { title, description, uploadedBy, tags, metadata, imageUrl } = req.body;
+        const { title, uploadedBy, tags, metadata, imageUrl } = req.body;
 
         // 验证必填字段
-        if (!title || !description || !uploadedBy || !imageUrl) {
+        if (!title || !uploadedBy || !imageUrl) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required fields: title, description, uploadedBy, imageUrl."
+                message: "Missing required fields: title, uploadedBy, imageUrl."
             });
         }
 
@@ -189,6 +190,15 @@ router.post('/add/:type/:name', async (req, res) => {
         }
 
         const { width, height, type: imageFormat } = imageInfo;
+
+        // 根据图片内容生成描述
+        let description;
+        try {
+            description = await generateImageDescription(imageUrl); // 调用工具函数生成描述
+        } catch (err) {
+            console.error("Error generating image description:", err);
+            description = "An image with no description available."; // 如果生成失败，使用默认描述
+        }
 
         // 连接数据库
         const dbClient = await connectDB();
