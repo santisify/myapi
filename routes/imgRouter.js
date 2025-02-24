@@ -170,9 +170,10 @@ router.post('/add/:type/:name', async (req, res) => {
         const {width, height, type: imageFormat} = imageInfo;
 
         // 根据图片内容生成描述
-        let description;
+        let description, dsp;
         try {
-            description = await generateImageDescription(imageUrl); // 调用工具函数生成描述
+            dsp = await generateImageDescription(imageUrl); // 调用工具函数生成描述
+            description = dsp.text;
         } catch (err) {
             console.error("Error generating image description:", err);
             description = "An image with no description available."; // 如果生成失败，使用默认描述
