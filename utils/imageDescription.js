@@ -58,7 +58,7 @@ async function generateImageDescription(imgUrl) {
             }], temperature: 0.3, response_format: {type: "json_object"}
         });
         // 返回生成的描述
-        return JSON.parse(completion.choices[0].message.content);
+        return JSON.parse(completion.choices[0].message.content).text;
     } catch (err) {
         console.error("Error generating image description:", err);
         throw new Error("Failed to generate image description.");
