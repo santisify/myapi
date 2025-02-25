@@ -160,6 +160,7 @@ router.post('/add/:type/:name', async (req, res) => {
             const response = await axios.get(imageUrl, {responseType: 'arraybuffer'});
             buffer = Buffer.from(response.data, 'binary');
             imageInfo = sizeOf(buffer); // 获取图片尺寸和格式
+            console.log(JSON.stringify(imageInfo));
         } catch (err) {
             console.error("Error fetching image:", err);
             return res.status(400).json({
