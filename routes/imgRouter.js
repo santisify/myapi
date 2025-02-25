@@ -133,6 +133,10 @@ router.get('/:type/:name', async (req, res) => {
  * @POST https://api.lazy-boy-acmer.cn/img/add/:type/:name
  * @param {string} type - 图片分类
  * @param {string} name - 图片名称
+ * @body {string} uploadedBy - 上传者
+ * @body {Array} tags - 标签
+ * @body {Object} metadata - 额外数据
+ * @body {string} imgUrl - 图片路径
  */
 router.post('/add/:type/:name', async (req, res) => {
     try {
@@ -234,5 +238,25 @@ router.post('/add/:type/:name', async (req, res) => {
         });
     }
 });
+
+/**
+ * 删除图片
+ * @DELETE https://api.lazy-boy-acmer,cn/del/:type/:name
+ * @param {string} type - 图片分类
+ * @param {string} name - 图片名称
+ */
+
+router.delete('/del/:type/:name', async (req, res) => {
+    try {
+        res.status(200).json({
+            success: true, data: []
+        })
+    } catch (err) {
+        console.error("Error in DELETE /img route:", err);
+        res.status(400).json({
+            success: false, message: "Missing required fields: title, uploadedBy, imageUrl."
+        })
+    }
+})
 
 module.exports = router;
