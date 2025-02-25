@@ -142,7 +142,6 @@ router.post('/add/:type/:name', async (req, res) => {
     try {
         const {type, name} = req.params;
         const {uploadedBy, tags, metadata, imageUrl} = req.body;
-        const title = type + name;
         // 验证必填字段
         if (!uploadedBy || !imageUrl) {
             return res.status(400).json({
@@ -207,7 +206,7 @@ router.post('/add/:type/:name', async (req, res) => {
 
         // 插入新图片
         const result = await collection.insertOne({
-            title,
+            title: `${type}${name}`,
             type,
             description,
             filename: `${name}.${imageFormat.toLowerCase()}`,
