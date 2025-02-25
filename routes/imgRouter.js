@@ -251,17 +251,11 @@ router.delete('/del/:type/:name', async (req, res) => {
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('img');
         const deleteResult = await collection.deleteOne({
-            type: type, filename: {$regex: new RegExp(`^${name}\\.`, 'i')}
+            type: type, filename: `${name}.webp`, title: `${type}${name}`
         });
-        if (deleteResult.length > 0) {
-            res.status(200).json({
-                success: true, data: deleteResult
-            })
-        } else {
-            res.status(404).json({
-                success: false, message: `Image not found`
-            })
-        }
+        res.status(200).json({
+            success: true, data: deleteResult
+        })
     } catch (err) {
         console.error("Error deleting image:", err);
         res.status(500).json({
