@@ -155,7 +155,6 @@ router.post('/add/:type/:name', async (req, res) => {
             });
         }
 
-        const {width, height, type: imageFormat} = imageInfo;
 
         // 连接数据库
         const dbClient = await connectDB();
@@ -187,6 +186,7 @@ router.post('/add/:type/:name', async (req, res) => {
             });
         }
 
+        const {width, height, type: imageFormat} = imageInfo;
         // 根据图片内容生成描述
         // let description;
         // try {
