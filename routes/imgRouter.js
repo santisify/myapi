@@ -250,12 +250,14 @@ router.delete('/del/:type/:name', async (req, res) => {
         // 连接数据库
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('img');
-        const deleteResult = collection.deleteOne({type: type, filename: {$regex: new RegExp(`^${name}\\.`, 'i')}});
-        if(deleteResult.length > 0) {
+        const deleteResult = await collection.deleteOne({
+            type: type, filename: {$regex: new RegExp(`^${name}\\.`, 'i')}
+        });
+        if (deleteResult.length > 0) {
             res.status(200).json({
                 success: true, data: deleteResult
             })
-        }else {
+        } else {
             res.status(404).json({
                 success: false, message: `Image not found`
             })
