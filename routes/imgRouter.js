@@ -137,10 +137,10 @@ router.get('/:type/:name', async (req, res) => {
 router.post('/add/:type/:name', async (req, res) => {
     try {
         const {type, name} = req.params;
-        const {title, uploadedBy, tags, metadata, imageUrl} = req.body;
-
+        const {uploadedBy, tags, metadata, imageUrl} = req.body;
+        const title = type + name;
         // 验证必填字段
-        if (!title || !uploadedBy || !imageUrl) {
+        if (!uploadedBy || !imageUrl) {
             return res.status(400).json({
                 success: false, message: "Missing required fields: title, uploadedBy, imageUrl."
             });
