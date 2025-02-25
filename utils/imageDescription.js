@@ -3,15 +3,12 @@ const sharp = require('sharp');
 const axios = require('axios');
 
 const system_prompt = `
-你是月之暗面（Kimi）的智能客服，你负责回答用户提出的各种问题。请参考文档内容回复用户的问题，在一次回复中可以同时包含文字、图片、链接。
+用户提供base64格式的图片，描述这个图片
 "
-" 
-请使用如下 JSON 格式输出你的回复：
- 
+请使用如下 JSON 格式输出你的回复： 
 {
     "text": "文字信息",
     "image": "图片地址",
-    "url": "链接地址"
 }
 "
 注意，请将文字信息放置在 'text' 字段中，将图片以 oss:// 开头的链接形式放在 'image' 字段中，将普通链接放置在 'url' 字段中。
@@ -19,7 +16,7 @@ const system_prompt = `
 
 // 初始化 OpenAI 客户端
 const client = new OpenAI({
-    apiKey: process.env.KIMI_APIKEY, baseURL: "https://api.moonshot.cn/v1",
+    apiKey: process.env.DEEPSEEK_APIKEY, baseURL: "https://api.deepseek.com/v1",
 });
 
 /**
@@ -42,19 +39,13 @@ async function generateImageDescription(imgUrl) {
         const base64Image = `data:image/jpeg;base64,${jpegBuffer.toString('base64')}`;
 
         // 调用 Kimi API 生成描述
+        const user_prompt = `用一段话描述图片 ${base64Image}`;
         const completion = await client.chat.completions.create({
-            model: "kimi-latest", // 确保使用支持图片输入的模型
+            model: "deepseek-chat", // 确保使用支持图片输入的模型
             messages: [{
-                role: "system",
-                content: "你是 Kimi，由 Moonshot AI 提供的人工智能助手，你更擅长中文和英文的对话。你会为用户提供安全，有帮助，准确的回答。同时，你会拒绝一切涉及恐怖主义，种族歧视，黄色暴力等问题的回答。Moonshot AI 为专有名词，不可翻译成其他语言。"
-            }, {
                 role: "system", content: system_prompt
             }, {
-                role: "user", content: [{
-                    type: "text", text: "请用一段话描述以下图片"
-                }, {
-                    type: "image_url", image_url: base64Image
-                }]
+                role: "user", content: user_prompt
             }], temperature: 0.3, response_format: {type: "json_object"}
         });
         // 返回生成的描述

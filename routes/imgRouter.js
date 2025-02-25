@@ -153,6 +153,23 @@ router.post('/add/:type/:name', async (req, res) => {
             });
         }
 
+        const {width, height, type: imageFormat} = imageInfo;
+
+        // 连接数据库
+        const dbClient = await connectDB();
+        const collection = dbClient.db('lazyboy').collection('img');
+
+        // 检查是否已存在相同 type 和 name 的图片
+        const existingImage = await collection.findOne({
+            type: type, filename: {$regex: new RegExp(`^${name}\\.`, 'i')} // 匹配文件名（忽略后缀）
+        });
+
+        if (existingImage) {
+            return res.status(409).json({
+                success: false, message: `An image with type '${type}' and name '${name}' already exists.`
+            });
+        }
+
         // 下载图片并获取其信息
         let imageInfo;
         let buffer;
@@ -168,32 +185,13 @@ router.post('/add/:type/:name', async (req, res) => {
             });
         }
 
-        const {width, height, type: imageFormat} = imageInfo;
-
         // 根据图片内容生成描述
-        let description, dsp;
+        let description;
         try {
-            dsp = await generateImageDescription(imageUrl); // 调用工具函数生成描述
-            description = dsp.text;
-            console.log(description);
+            description = generateImageDescription(imageUrl);
         } catch (err) {
             console.error("Error generating image description:", err);
-            description = "An image with no description available."; // 如果生成失败，使用默认描述
-        }
-
-        // 连接数据库
-        const dbClient = await connectDB();
-        const collection = dbClient.db('lazyboy').collection('img');
-
-        // 检查是否已存在相同 type 和 name 的图片
-        const existingImage = await collection.findOne({
-            type: type, filename: {$regex: new RegExp(`^${name}\\.`, 'i')} // 匹配文件名（忽略后缀）
-        });
-
-        if (existingImage) {
-            return res.status(409).json({
-                success: false, message: `An image with type '${type}' and name '${name}' already exists.`
-            });
+            description = "An image with no description available."; //默认值
         }
 
         // 构造图片 URL
