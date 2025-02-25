@@ -4,10 +4,13 @@ const connectDB = require('../db/db');
 const axios = require('axios');
 const sizeOf = require('image-size'); // 用于获取图片尺寸和格式
 const {URL} = require('url'); // 用于解析 URL
-const {generateImageDescription} = require('../utils/imageDescription'); // 假设有一个工具函数用于生成图片描述
+// const {generateImageDescription} = require('../utils/imageDescription'); // 假设有一个工具函数用于生成图片描述
+
 /**
- * @GET https://api.lazy-boy-acmer.cn/img/
  * 获取所有图片信息
+ * @GET https://api.lazy-boy-acmer.cn/img/
+ * @params null
+ * @returns JSON
  */
 router.get('/', async (req, res) => {
     try {
@@ -34,8 +37,7 @@ router.get('/', async (req, res) => {
 
 /**
  * @GET https://api.lazy-boy-acmer.cn/img/:type
- * 获取分类图库随机信息
- * @type 图片类型
+ * @param {string} type -图片分类
  */
 router.get('/:type', async (req, res) => {
     try {
@@ -64,9 +66,9 @@ router.get('/:type', async (req, res) => {
 });
 
 /**
- * @GET https://api.lazy-boy-acmer.cn/img/:type/all
  * 获取所有同一分类的图片
- * @type 图片类型
+ * @GET https://api.lazy-boy-acmer.cn/img/:type/all
+ * @param {string} type - 图片分类
  */
 router.get('/:type/all', async (req, res) => {
     try {
@@ -93,10 +95,10 @@ router.get('/:type/all', async (req, res) => {
 });
 
 /**
- * @GET https://api.lazy-boy-acmer.cn/img/:type/:name
  * 获取指定类型图片的所有信息
- * @type 图片类型
- * @name 图片名称(无后缀)
+ * @GET https://api.lazy-boy-acmer.cn/img/:type/:name
+ * @param {string} type - 图片分类
+ * @param {string} name - 图片名称
  */
 router.get('/:type/:name', async (req, res) => {
     try {
@@ -127,10 +129,10 @@ router.get('/:type/:name', async (req, res) => {
 });
 
 /**
- * @POST https://api.lazy-boy-acmer.cn/img/add/:type/:name
  * 添加图片
- * @type 图片类型
- * @name 图片名称(无后缀)
+ * @POST https://api.lazy-boy-acmer.cn/img/add/:type/:name
+ * @param {string} type - 图片分类
+ * @param {string} name - 图片名称
  */
 router.post('/add/:type/:name', async (req, res) => {
     try {
@@ -186,13 +188,15 @@ router.post('/add/:type/:name', async (req, res) => {
         }
 
         // 根据图片内容生成描述
-        let description;
-        try {
-            description = generateImageDescription(imageUrl);
-        } catch (err) {
-            console.error("Error generating image description:", err);
-            description = "An image with no description available."; //默认值
-        }
+        // let description;
+        // try {
+        //     description = generateImageDescription(imageUrl);
+        // } catch (err) {
+        //     console.error("Error generating image description:", err);
+        //     description = "An image with no description available."; //默认值
+        // }
+        let description = "An image with no description available."; //默认值
+
 
         // 构造图片 URL
         const url = `https://unpkg.com/picx-images/${type}/${name}.${imageFormat.toLowerCase()}`;
