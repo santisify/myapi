@@ -246,13 +246,24 @@ router.post('/add/:type/:name', async (req, res) => {
  */
 router.delete('/del/:type/:name', async (req, res) => {
     try {
-        res.status(200).json({
-            success: true, data: []
-        })
+        const {type, name} = req.params;
+        // 连接数据库
+        const dbClient = await connectDB();
+        const collection = dbClient.db('lazyboy').collection('img');
+        const deleteResult = collection.deleteOne({type: type, filename: {$regex: new RegExp(`^${name}\\.`, 'i')}});
+        if(deleteResult.length > 0) {
+            res.status(200).json({
+                success: true, data: deleteResult
+            })
+        }else {
+            res.status(404).json({
+                success: false, message: `Image not found`
+            })
+        }
     } catch (err) {
-        console.error("Error in DELETE /img route:", err);
-        res.status(400).json({
-            success: false, message: "Missing required fields: title, uploadedBy, imageUrl."
+        console.error("Error deleting image:", err);
+        res.status(500).json({
+            success: false, message: 'Database error', error: err.message
         })
     }
 })
