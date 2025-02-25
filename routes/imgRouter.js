@@ -245,7 +245,6 @@ router.post('/add/:type/:name', async (req, res) => {
  * @param {string} type - 图片分类
  * @param {string} name - 图片名称
  */
-
 router.delete('/del/:type/:name', async (req, res) => {
     try {
         res.status(200).json({
