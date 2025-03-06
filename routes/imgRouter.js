@@ -243,24 +243,37 @@ router.post('/add/:type/:name', async (req, res) => {
  * @DELETE https://api.lazy-boy-acmer,cn/del/:type/:name
  * @param {string} type - 图片分类
  * @param {string} name - 图片名称
+ * @body {string} username - 用户名
+ * @body {string}
  */
 router.delete('/del/:type/:name', async (req, res) => {
+    const {type, name} = req.params;
+    const {username} = req.body;
     try {
-        const {type, name} = req.params;
-        // 连接数据库
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('img');
-        const deleteResult = await collection.deleteOne({
+        const findResult = await collection.findOne({
             type: type, filename: `${name}.webp`, title: `${type}${name}`
         });
-        res.status(200).json({
-            success: true, data: deleteResult
-        })
+        const _id = findResult.rows[0]._id;
+        const imgUpload = findResult.rows[0].uploadedBy;
+
+        if (username === imgUpload) {
+            const delResult = await collection.deleteOne({_id: _id});
+            res.status(200).json({
+                success: true, data: delResult
+            })
+        } else {
+            res.status(404).json({
+                success: false, message: 'Image not found or current user does not have the permission to delete it'
+            })
+        }
     } catch (err) {
         console.error("Error deleting image:", err);
         res.status(500).json({
             success: false, message: 'Database error', error: err.message
         })
+
     }
 })
 

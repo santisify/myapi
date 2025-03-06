@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 const connectDB = require('../db/db');
 
-// 获取用户
+/**
+ * 获取用户
+ * @param {string} username - 用户名
+ * @returns {Object} {success, data|| message || (message, error)}
+ */
 router.get('/:username', async (req, res) => {
     try {
         const dbClient = await connectDB();
