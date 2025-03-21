@@ -14,5 +14,6 @@ router.get('/', (req, res) => {
 router.use('/img', imgRoutes);
 router.use('/user', userRoutes);
 router.use('/site', siteRoutes);
+
 module.exports = router;
 module.exports = router;
