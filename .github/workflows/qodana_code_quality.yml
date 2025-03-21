@@ -22,3 +22,9 @@ jobs:
         uses: JetBrains/qodana-action@v2024.3
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+      - name: 'Upload Logs'
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: qodana-logs
+          path: ./logs/
