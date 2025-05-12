@@ -40,7 +40,6 @@ router.post('/add', async (req, res) => {
 router.delete('/delete/:siteId', async (req, res) => {
     try {
         const siteId = req.params.siteId; // 从 URL 参数中获取 siteId
-        console.log('要删除的 siteId:', siteId);
 
         const dbClient = await connectDB();
         const collection = dbClient.db('lazyboy').collection('siteInfo');
