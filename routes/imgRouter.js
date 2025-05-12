@@ -11,16 +11,15 @@ const fs = require('fs')
 
 /**
  * 获取分类
- * @GET https://api.lazy-boy-acmer.cn/list/:type
+ * @GET https://api.lazy-boy-acmer.cn/img/list/:type
  * @params {string} type -图片分类
  * @returns JSON
  */
 router.get('/list/:type', async (req, res) => {
+  const {targetDir} = req.params;
+  const packageRoot = path.dirname(require.resolve(`picx-images/package.json`));
+  const targetPath = path.join(packageRoot, targetDir);
   try {
-    const {targetDir} = req.params;
-    const packageRoot = path.dirname(require.resolve(`picx-images/package.json`));
-    const targetPath = path.join(packageRoot, targetDir);
-
     // 递归读取目录
     const readDir = (dirPath) => {
       return fs.readdirSync(dirPath).flatMap(file => {
@@ -35,7 +34,7 @@ router.get('/list/:type', async (req, res) => {
   } catch (error) {
     console.error(`Error reading package files: ${error.message}`);
     res.status(504).json({
-      success:false, message: error
+      success:false, message: targetDir + " " + targetPath
     })
   }
 });
