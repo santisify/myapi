@@ -24,7 +24,7 @@ async function generateImageDescription(imgUrl) {
     },], model: 'doubao-1.5-vision-lite',
   });
 
-  console.log(response.choices[0]);
+  return response.choices[0];
 }
 
 module.exports = {generateImageDescription};

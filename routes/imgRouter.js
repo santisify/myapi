@@ -233,7 +233,7 @@ router.post('/add/:type/:name', async (req, res) => {
         description = "An image with no description available."; //默认值
     }
     // let description = "An image with no description available."; //默认值
-
+    console.log(description);
     // 构造图片 URL
     const url = `https://unpkg.com/picx-images/${type}/${name}.${imageFormat.toLowerCase()}`;
 
