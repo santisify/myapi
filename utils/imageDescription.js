@@ -14,7 +14,7 @@ const client = new OpenAI({
  */
 
 async function generateImageDescription(imgUrl) {
-  const response = await openai.chat.completions.create({
+  const response = await client.chat.completions.create({
     apiKey: process.env['ARK_API_KEY'], messages: [{
       role: 'user', content: [{
         type: 'image_url', image_url: {
