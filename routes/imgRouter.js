@@ -6,6 +6,7 @@ const sizeOf = require('image-size'); // 用于获取图片尺寸和格式
 const {URL} = require('url'); // 用于解析 URL
 const path = require('path')
 const fs = require('fs')
+const {generateImageDescription} = require("../utils/imageDescription");
 // const {generateImageDescription} = require('../utils/imageDescription'); // 假设有一个工具函数用于生成图片描述
 
 
@@ -224,15 +225,14 @@ router.post('/add/:type/:name', async (req, res) => {
 
     const {width, height, type: imageFormat} = imageInfo;
     // 根据图片内容生成描述
-    // let description;
-    // try {
-    //     description = generateImageDescription(imageUrl);
-    // } catch (err) {
-    //     console.error("Error generating image description:", err);
-    //     description = "An image with no description available."; //默认值
-    // }
-    let description = "An image with no description available."; //默认值
-
+    let description;
+    try {
+        description = generateImageDescription(imageUrl);
+    } catch (err) {
+        console.error("Error generating image description:", err);
+        description = "An image with no description available."; //默认值
+    }
+    // let description = "An image with no description available."; //默认值
 
     // 构造图片 URL
     const url = `https://unpkg.com/picx-images/${type}/${name}.${imageFormat.toLowerCase()}`;
